@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" class="transition-colors">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Tank Club Army</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css"> <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 font-sans text-gray-900 dark:text-white" onload="initArmyPage()">
+  <header class="bg-green-800 dark:bg-green-900 text-white p-4 text-center text-2xl font-bold flex items-center justify-center gap-2">
+    <img src="logo.jpg" alt="Tank Club Logo" class="w-10 h-10 rounded-full" />
+    Your Tank Club Army
+    <button onclick="toggleDarkMode()" class="ml-4 bg-black text-white px-2 py-1 text-sm rounded">🌙</button>
+  </header>
+
+  <main class="p-4">
+    <section class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6 w-full max-w-4xl mx-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Your Army Units</h2>
+        <a href="index.html" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">← Back to Builder</a>
+      </div>
+      <p class="mb-4">Total Army Points: <span id="armyTotalPoints">0</span> pts</p>
+      <ul id="displayedArmyUnits" class="space-y-4"></ul>
+      <div class="mt-6 space-x-2">
+        <button onclick="downloadPDF()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">Download Army PDF</button>
+        <button onclick="saveArmyState()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Save Current State</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script> <script>
+    let armyUnits = []; // Local array for units on this page
+    const armyTotalPointsElement = document.getElementById('armyTotalPoints');
+    const displayedArmyUnitsElement = document.getElementById('displayedArmyUnits');
+
+    // Function to render a single unit card for the displayed army (editable)
+    function renderArmyUnitCard(unit) {
+        const li = document.createElement('li');
+        li.id = `army-unit-${unit.InstanceID}`; // Ensure unique ID for the displayed unit
+        li.className = 'p-4 border rounded shadow-md bg-gray-50 dark:bg-gray-700 flex flex-col space-y-2';
+        li.innerHTML = `
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold">${unit.Name}</h3>
+                <button onclick="removeUnitFromArmyPage('${unit.InstanceID}')" class="remove-button bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">➖ Remove</button>
+            </div>
+            <p><strong>Points:</strong> ${unit.Points} pts</p>
+
+            <label class="block">Custom Name:
+                <input type="text" value="${unit.CustomName || ''}" onchange="updateArmyUnitStat('${unit.InstanceID}', 'CustomName', this.value)"
+                       class="w-full p-1 border rounded dark:text-black">
+            </label>
+
+            <div class="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                    <label>Move: <input type="number" value="${unit.CurrentMove || unit.Move}" onchange="updateArmyUnitStat('${unit.InstanceID}', 'CurrentMove', this.value)" class="w-16 p-1 border rounded dark:text-black"></label>
+                </div>
+                <div>
+                    <label>Aim: <input type="number" value="${unit.CurrentAim || unit.Aim}" onchange="updateArmyUnitStat('${unit.InstanceID}', 'CurrentAim', this.value)" class="w-16 p-1 border rounded dark:text-black"></label>
+                </div>
+                <div>
+                    <label>Shoot: <input type="number" value="${unit.CurrentShoot || unit.Shoot}" onchange="updateArmyUnitStat('${unit.InstanceID}', 'CurrentShoot', this.value)" class="w-16 p-1 border rounded dark:text-black"></label>
+                </div>
+                <div>
+                    <label>Speed: <input type="number" value="${unit.CurrentSpeed || unit.Speed}" onchange="updateArmyUnitStat('${unit.InstanceID}', 'CurrentSpeed', this.value)" class="w-16 p-1 border rounded dark:text-black"></label>
+                </div>
+                <div>
+                    <label>Front Armor: <input type="number" value="${unit.CurrentFront || unit.Front}" onchange="updateArmyUnitStat('${unit.InstanceID}', 'CurrentFront', this.value)" class="w-16 p-1 border rounded dark:text-black"></label>
+                </div>
+                <div>
+                    <label>Side Armor: <input type="number" value="${unit.CurrentSide || unit.Side}" onchange="updateArmyUnitStat('${unit.InstanceID}', 'CurrentSide', this.value)" class="w-16 p-1 border rounded dark:text-black"></label>
+                </div>
+                <div>
+                    <label>Rear Armor: <input type="number" value="${unit.CurrentRear || unit.Rear}" onchange="updateArmyUnitStat('${unit.InstanceID}', 'CurrentRear', this.value)" class="w-16 p-1 border rounded dark:text-black"></label>
+                </div>
+                <div>
+                    <label>Custom Text: <input type="text" value="${unit.CurrentSpecial || ''}" onchange="updateArmyUnitStat('${unit.InstanceID}', 'CurrentSpecial', this.value)" class="w-24 p-1 border rounded dark:text-black"></label>
+                </div>
+            </div>
+        `;
+        return li;
+    }
+
+    // Function to display units on the army page
+    function displayArmyUnits() {
+        displayedArmyUnitsElement.innerHTML = '';
+        armyUnits.forEach(unit => {
+            displayedArmyUnitsElement.appendChild(renderArmyUnitCard(unit));
+        });
+        updateArmyTotalPoints();
+    }
+
+    // Update total points for the army page
+    function updateArmyTotalPoints() {
+        let currentArmyTotalPoints = armyUnits.reduce((sum, unit) => sum + unit.Points, 0);
+        armyTotalPointsElement.textContent = currentArmyTotalPoints;
+    }
+
+    // Remove unit from army on this page and save
+    function removeUnitFromArmyPage(unitInstanceID) {
+        const index = armyUnits.findIndex(unit => unit.InstanceID === unitInstanceID);
+        if (index !== -1) {
+            armyUnits.splice(index, 1);
+            saveArmyState(); // Save changes immediately
+            displayArmyUnits(); // Re-render the list
+        }
+    }
+
+    // Update stat for a unit on this page and save
+    function updateArmyUnitStat(unitInstanceID, statName, newValue) {
+        const unit = armyUnits.find(u => u.InstanceID === unitInstanceID);
+        if (unit) {
+            if (['CurrentMove', 'CurrentAim', 'CurrentShoot', 'CurrentSpeed', 'CurrentFront', 'CurrentSide', 'CurrentRear'].includes(statName)) {
+                unit[statName] = parseFloat(newValue) || 0;
+            } else {
+                unit[statName] = newValue;
+            }
+            saveArmyState(); // Save changes immediately
+            displayArmyUnits(); // Re-render the list for simplicity, though only value needs updating
+        }
+    }
+
+    // Save the current state of the army on this page back to local storage
+    function saveArmyState() {
+        localStorage.setItem('tankClubArmy', JSON.stringify(armyUnits));
+        alert('Army state saved!');
+    }
+
+    // Initialize the army display page
+    function initArmyPage() {
+        const savedArmy = localStorage.getItem('tankClubArmy');
+        if (savedArmy) {
+            armyUnits = JSON.parse(savedArmy);
+            // Ensure loaded units have all 'Current' stats and 'CustomName' initialized
+            armyUnits = armyUnits.map(unit => {
+                if (!unit.CurrentMove) {
+                    unit = initializeCurrentStats(unit); // Reuse initializeCurrentStats from script.js
+                }
+                if (unit.CustomName === undefined) {
+                    unit.CustomName = '';
+                }
+                return unit;
+            });
+            displayArmyUnits();
+        } else {
+            displayedArmyUnitsElement.innerHTML = '<p class="text-gray-600 dark:text-gray-400">No army found. Go back to the builder to create one!</p>';
+        }
+    }
+
+    // Need to ensure initializeCurrentStats is available in this scope for army.html
+    // If you intend for this to be a truly separate script, you'd copy it here.
+    // For shared script, it's already global.
+    // function initializeCurrentStats(unit) { /* ... copied from script.js ... */ }
+
+    // Ensure common functions like toggleDarkMode are available
+    window.toggleDarkMode = toggleDarkMode;
+    window.downloadPDF = downloadPDF; // Expose for the button on this page (from script.js)
+    window.initArmyPage = initArmyPage; // Expose for onload
+    window.removeUnitFromArmyPage = removeUnitFromArmyPage; // Expose for remove buttons
+    window.updateArmyUnitStat = updateArmyUnitStat; // Expose for stat changes
+    window.saveArmyState = saveArmyState; // Expose for save button
+
+    // Make initializeCurrentStats available from script.js to army.html's inline script
+    // This assumes initializeCurrentStats is part of the global scope in script.js
+    if (typeof initializeCurrentStats === 'function') {
+        window.initializeCurrentStats = initializeCurrentStats;
+    }
+
+  </script>
+</body>
+</html>
