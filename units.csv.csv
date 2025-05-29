@@ -1,0 +1,24 @@
+Name,Move,Aim,Shoot,Speed,Front,Side,Rear,Special,Points,Nation
+Panzer IV,3,3,3,4,5,2,1,,25,Germany
+Panzer III,3,3,2,6,2,2,2,,23,Germany
+Panther,3,3,4,6,5,3,1,,36,Germany
+Jagdpanther,2,4,5,4,5,3,2,Casemate Tank Destroyer,60,Germany
+Tiger I,3,2,5,5,6,5,5,Heavy Intimidating Presence,106,Germany
+Tiger II,3,4,5,3,7,5,4,Heavy Long Gun,115,Germany
+Sturmtiger,1,2,7,2,6,4,3,Siege Mortar Slow Load,85,Germany
+StuG III,4,2,3,4,3,2,2,Casemate,23,Germany
+Maus,1,4,5,2,7,6,5,Super Heavy,120,Germany
+T34/76,2,5,3,6,3,3,3,,49,Russian
+T34/85,2,5,4,6,3,3,3,,58,Russian
+T26,2,2,2,6,2,1,1,Light Tank,10,Russian
+KV-1S,3,3,4,5,4,4,4,,65,Russian
+t-70,1,1,1,5,3,1,1,Light Tank,13,Russian
+su-100,4,2,6,6,4,3,3,Casemate,54,Russian
+Churchill III/IV,5,4,3,3,5,4,3,,40,Allies
+Churchill Crocodile,5,4,3 (main gun),3,5,4,3,Flamethrower Armoured Trailer Intimidating Presence,50,Allies
+Sherman M4A3,3,4,3,5,4,3,3,,47,Allies
+Sherman Firefly,3,4,4,4,3,3,3,,41,Allies
+M10 Wolverine,2,4,5,5,3,2,1,Tank Destroyer Open Topped,36,Allies
+Cromwell VI,4,4,3,6,3,3,2,Cruiser Tank Fast Flanker,36,Allies
+A9 Cruiser Mk I,3,2,2,6,2,1,1,Cruiser Tank Suppression Fire,18,Allies
+Matilda II,2,2,2,3,5,4,3,Impenetrable to Light Fire Slow and Steady,28,Allies
