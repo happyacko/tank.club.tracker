@@ -1,0 +1,26 @@
+/* General body styles for dark mode transition */
+html.dark {
+  background-color: #111827;
+  color: white;
+}
+
+/* Optional custom styles for buttons and elements */
+.add-button {
+  transition: background-color 0.2s ease-in-out;
+}
+
+.remove-button {
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* You can add more specific styles here if Tailwind defaults aren't enough */
+/* For example, if you want a custom focus outline: */
+input:focus, select:focus, button:focus {
+  outline: 2px solid #3B82F6; /* Blue-600 */
+  outline-offset: 2px;
+}
+
+/* Ensure text in dark mode inputs is visible */
+.dark .dark\:text-black {
+    color: black !important;
+}
