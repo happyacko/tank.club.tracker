@@ -327,9 +327,9 @@ async function initApp() {
         });
 
 populateNationFilter();
-        nationFilterSelect.addEventListener('change', applyFilters);
-        pointLimitInput.addEventListener('input', applyFilters);
-applyFilters();
+        applyFilters(); 
+        
+        loadArmy(); // Load any previously saved army when the builder page loads
     } catch (error) {
         console.error('Error initializing builder app:', error);
         unitListElement.innerHTML = '<p class="text-red-500">Error loading units. Please check console for details.</p>';
