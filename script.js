@@ -327,7 +327,7 @@ async function initApp() {
         });
 
         populateNationFilter();
-        applyFilters();
+        applyFilters(); // Initial display
         nationFilterSelect.addEventListener('change', applyFilters);
         pointLimitInput.addEventListener('input', applyFilters);
         loadArmy(); // Load any previously saved army when the builder page loads
