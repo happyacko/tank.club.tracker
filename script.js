@@ -319,7 +319,7 @@ async function downloadPDF() {
 async function initApp() {
     try {
         // We only need to fetch units and populate filters on the main builder page
-        allUnits = await fetchAndParseCSV('units.csv.csv');
+        allUnits = await fetchAndParseCSV('units.csv');
         allUnits = allUnits.map(unit => {
             unit.InstanceID = 'original-' + Math.random().toString(36).substr(2, 9);
             return unit;
