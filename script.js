@@ -126,7 +126,7 @@ function applyFilters() {
     const selectedNation = nationFilterSelect.value;
 
     filteredUnits = allUnits.filter(unit => {
-        const meetsPointLimit = unit.Points <= pointLimit;
+        const meetsPointLimit = pointLimit === 0 || unit.Points <= pointLimit;
         const meetsNation = selectedNation === '' || unit.Nation === selectedNation;
         return meetsPointLimit && meetsNation;
     });
