@@ -8,6 +8,7 @@ Tiger II,3,4,5,3,7,5,4,Heavy Long Gun,115,Germany
 Sturmtiger,1,2,7,2,6,4,3,Siege Mortar Slow Load,85,Germany
 StuG III,4,2,3,4,3,2,2,Casemate,23,Germany
 Maus,1,4,5,2,7,6,5,Super Heavy,120,Germany
+Sd. Kfz 221,4,2,2,7,2,1,1,Light Vehicle Objective Grabber,12,Germany
 T34/76,2,5,3,6,3,3,3,,49,Russian
 T34/85,2,5,4,6,3,3,3,,58,Russian
 T26,2,2,2,6,2,1,1,Light Tank,10,Russian
@@ -22,3 +23,4 @@ M10 Wolverine,2,4,5,5,3,2,1,Tank Destroyer Open Topped,36,Allies
 Cromwell VI,4,4,3,6,3,3,2,Cruiser Tank Fast Flanker,36,Allies
 A9 Cruiser Mk I,3,2,2,6,2,1,1,Cruiser Tank Suppression Fire,18,Allies
 Matilda II,2,2,2,3,5,4,3,Impenetrable to Light Fire Slow and Steady,28,Allies
+Jepp,4,1,1,9,1,1,0,Light Vehicle Objective Grabber,6,Allies
