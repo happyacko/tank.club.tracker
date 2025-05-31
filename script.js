@@ -25,7 +25,7 @@ async function fetchAndParseCSV(url) {
         let unit = {};
         headers.forEach((header, i) => {
             // Convert numeric values to numbers
-            if (['Points', 'Move', 'Aim', 'Shoot', 'Speed', 'Front', 'Side', 'Rear'].includes(header)) {
+            if (['Points', 'Move', 'Aim', 'Shoot', 'Speed', 'Front', 'Side', 'Back'].includes(header)) {
                 unit[header] = parseFloat(values[i]) || 0; // Use parseFloat for potential decimals, default to 0
             } else {
                 unit[header] = values[i];
@@ -46,7 +46,7 @@ function renderUnitCard(unit) {
         <p><strong>Nation:</strong> ${unit.Nation}</p>
         <p><strong>Points:</strong> ${unit.Points} pts</p>
         <p><strong>Move:</strong> ${unit.Move}, <strong>Aim:</strong> ${unit.Aim}, <strong>Shoot:</strong> ${unit.Shoot}, <strong>Speed:</strong> ${unit.Speed}</p>
-        <p><strong>Armour — Front:</strong> ${unit.Front}, <strong>Side:</strong> ${unit.Side}, <strong>Rear:</strong> ${unit.Rear}</p>
+        <p><strong>Armour — Front:</strong> ${unit.Front}, <strong>Side:</strong> ${unit.Side}, <strong>Back:</strong> ${unit.Back}</p>
         <p><strong>Special:</strong> ${unit.Special}</p>
         <button onclick="addToArmy('${unit.InstanceID}')" class="add-button mt-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded">➕ Add</button>
     `;
@@ -90,7 +90,7 @@ function renderSelectedUnitCard(unit) {
                 <label>Side Armor: <input type="number" value="${unit.CurrentSide || unit.Side}" onchange="updateUnitStat('${unit.InstanceID}', 'CurrentSide', this.value)" class="w-16 p-1 border rounded dark:text-black"></label>
             </div>
             <div>
-                <label>Rear Armor: <input type="number" value="${unit.CurrentRear || unit.Rear}" onchange="updateUnitStat('${unit.InstanceID}', 'CurrentRear', this.value)" class="w-16 p-1 border rounded dark:text-black"></label>
+                <label>Back Armor: <input type="number" value="${unit.CurrentBack || unit.Back}" onchange="updateUnitStat('${unit.InstanceID}', 'CurrentBack', this.value)" class="w-16 p-1 border rounded dark:text-black"></label>
             </div>
             <div>
                 <label>Custom Text: <input type="text" value="${unit.CurrentSpecial || ''}" onchange="updateUnitStat('${unit.InstanceID}', 'CurrentSpecial', this.value)" class="w-24 p-1 border rounded dark:text-black"></label>
