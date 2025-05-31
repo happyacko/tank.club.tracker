@@ -328,6 +328,8 @@ async function initApp() {
 
         populateNationFilter();
         applyFilters();
+        nationFilterSelect.addEventListener('change', applyFilters);
+        pointLimitInput.addEventListener('input', applyFilters);
         loadArmy(); // Load any previously saved army when the builder page loads
     } catch (error) {
         console.error('Error initializing builder app:', error);
