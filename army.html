@@ -111,7 +111,7 @@
     function updateArmyUnitStat(unitInstanceID, statName, newValue) {
         const unit = armyUnits.find(u => u.InstanceID === unitInstanceID);
         if (unit) {
-            if (['CurrentMove', 'CurrentAim', 'CurrentShoot', 'CurrentSpeed', 'CurrentFront', 'CurrentSide', 'CurrentRear'].includes(statName)) {
+            if (['CurrentMove', 'CurrentAim', 'CurrentShoot', 'CurrentSpeed', 'CurrentFront', 'CurrentSide', 'CurrentBack'].includes(statName)) {
                 unit[statName] = parseFloat(newValue) || 0;
             } else {
                 unit[statName] = newValue;
