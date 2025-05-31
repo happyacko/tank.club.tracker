@@ -25,12 +25,14 @@ async function fetchAndParseCSV(url) {
         let unit = {};
         headers.forEach((header, i) => {
             // Convert numeric values to numbers
-            if (['Points', 'Move', 'Aim', 'Shoot', 'Speed', 'Front', 'Side', 'Back'].includes(header)) {
+            if (['Points', 'Move', 'Aim', 'Shoot', 'Speed', 'Front', 'Side', 'Rear'].includes(header)) {
                 unit[header] = parseFloat(values[i]) || 0; // Use parseFloat for potential decimals, default to 0
             } else {
                 unit[header] = values[i];
             }
         });
+        // Add a unique ID for each unit instance for easier tracking
+        // This ID will be unique PER INSTANCE added to the army
         unit.InstanceID = 'unit-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
         return unit;
     });
@@ -46,7 +48,7 @@ function renderUnitCard(unit) {
         <p><strong>Nation:</strong> ${unit.Nation}</p>
         <p><strong>Points:</strong> ${unit.Points} pts</p>
         <p><strong>Move:</strong> ${unit.Move}, <strong>Aim:</strong> ${unit.Aim}, <strong>Shoot:</strong> ${unit.Shoot}, <strong>Speed:</strong> ${unit.Speed}</p>
-        <p><strong>Armour — Front:</strong> ${unit.Front}, <strong>Side:</strong> ${unit.Side}, <strong>Back:</strong> ${unit.Back}</p>
+        <p><strong>Armour — Front:</strong> ${unit.Front}, <strong>Side:</strong> ${unit.Side}, <strong>Rear:</strong> ${unit.Rear}</p>
         <p><strong>Special:</strong> ${unit.Special}</p>
         <button onclick="addToArmy('${unit.InstanceID}')" class="add-button mt-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded">➕ Add</button>
     `;
@@ -54,10 +56,11 @@ function renderUnitCard(unit) {
 }
 
 // Function to render a single unit card for selected units (in Your Army section)
+// Now includes editable stats and a custom name field
 function renderSelectedUnitCard(unit) {
     const li = document.createElement('li');
-    li.id = `selected-unit-${unit.InstanceID}`;
-    li.className = 'p-4 border rounded shadow-md bg-gray-50 dark:bg-gray-700 flex flex-col space-y-2';
+    li.id = `selected-unit-${unit.InstanceID}`; // Use InstanceID for unique element ID
+    li.className = 'p-4 border rounded shadow-md bg-gray-50 dark:bg-gray-700 flex flex-col space-y-2'; // Tailwind classes
     li.innerHTML = `
         <div class="flex justify-between items-center">
             <h3 class="text-lg font-bold">${unit.Name}</h3>
@@ -90,7 +93,7 @@ function renderSelectedUnitCard(unit) {
                 <label>Side Armor: <input type="number" value="${unit.CurrentSide || unit.Side}" onchange="updateUnitStat('${unit.InstanceID}', 'CurrentSide', this.value)" class="w-16 p-1 border rounded dark:text-black"></label>
             </div>
             <div>
-                <label>Back Armor: <input type="number" value="${unit.CurrentBack || unit.Back}" onchange="updateUnitStat('${unit.InstanceID}', 'CurrentBack', this.value)" class="w-16 p-1 border rounded dark:text-black"></label>
+                <label>Rear Armor: <input type="number" value="${unit.CurrentRear || unit.Rear}" onchange="updateUnitStat('${unit.InstanceID}', 'CurrentRear', this.value)" class="w-16 p-1 border rounded dark:text-black"></label>
             </div>
             <div>
                 <label>Custom Text: <input type="text" value="${unit.CurrentSpecial || ''}" onchange="updateUnitStat('${unit.InstanceID}', 'CurrentSpecial', this.value)" class="w-24 p-1 border rounded dark:text-black"></label>
@@ -102,7 +105,7 @@ function renderSelectedUnitCard(unit) {
 
 // Function to display units
 function displayUnits(units, targetElement, renderer) {
-    targetElement.innerHTML = '';
+    targetElement.innerHTML = ''; // Clear previous units
     units.forEach(unit => {
         targetElement.appendChild(renderer(unit));
     });
@@ -110,8 +113,8 @@ function displayUnits(units, targetElement, renderer) {
 
 // Function to populate nation filter
 function populateNationFilter() {
-    const nations = [...new Set(allUnits.map(unit => unit.Nation))].sort();
-    nationFilterSelect.innerHTML = '<option value="">All</option>';
+    const nations = [...new Set(allUnits.map(unit => unit.Nation))].sort(); // Get unique nations and sort them
+    nationFilterSelect.innerHTML = '<option value="">All</option>'; // Reset
     nations.forEach(nation => {
         const option = document.createElement('option');
         option.value = nation;
@@ -128,7 +131,6 @@ function applyFilters() {
     filteredUnits = allUnits.filter(unit => {
         const meetsPointLimit = unit.Points <= pointLimit;
         const meetsNation = selectedNation === '' || unit.Nation === selectedNation;
-        const meetsPointLimit = isNaN(pointLimit) || pointLimit === 0 || unit.Points <= pointLimit;
         return meetsPointLimit && meetsNation;
     });
     displayUnits(filteredUnits, unitListElement, renderUnitCard);
@@ -150,22 +152,26 @@ function initializeCurrentStats(unit) {
     unit.CurrentFront = unit.Front;
     unit.CurrentSide = unit.Side;
     unit.CurrentRear = unit.Rear;
-    unit.CurrentSpecial = unit.Special;
-    unit.CustomName = '';
+    unit.CurrentSpecial = unit.Special; // Initialize with original special rule
+    unit.CustomName = ''; // Initialize custom name as empty string
     return unit;
 }
 
-// Add unit to army
+// Add unit to army (Revised for InstanceID and editable stats)
 function addToArmy(originalUnitID) {
+    // Find the original unit template
     const unitTemplate = allUnits.find(u => u.InstanceID === originalUnitID);
     if (!unitTemplate) {
         console.error("Original unit not found:", originalUnitID);
         return;
     }
 
+    // Create a deep copy for the selected unit to allow independent stat changes
+    // Assign a new, unique InstanceID for *this specific instance* in the army
     const newUnitInstance = JSON.parse(JSON.stringify(unitTemplate));
     newUnitInstance.InstanceID = 'army-unit-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 
+    // Initialize current stats with their original values and an empty custom name
     initializeCurrentStats(newUnitInstance);
 
     if ((totalPoints + newUnitInstance.Points) <= (parseInt(pointLimitInput.value) || 0)) {
@@ -176,7 +182,8 @@ function addToArmy(originalUnitID) {
     }
 }
 
-// Remove unit from army
+
+// Remove unit from army (uses InstanceID)
 function removeFromArmy(unitInstanceID) {
     const index = selectedUnits.findIndex(unit => unit.InstanceID === unitInstanceID);
     if (index !== -1) {
@@ -189,37 +196,35 @@ function removeFromArmy(unitInstanceID) {
 function updateUnitStat(unitInstanceID, statName, newValue) {
     const unit = selectedUnits.find(u => u.InstanceID === unitInstanceID);
     if (unit) {
+        // Convert to number if it's a numeric stat, otherwise keep as string
         if (['CurrentMove', 'CurrentAim', 'CurrentShoot', 'CurrentSpeed', 'CurrentFront', 'CurrentSide', 'CurrentRear'].includes(statName)) {
             unit[statName] = parseFloat(newValue) || 0;
         } else {
-            unit[statName] = newValue;
+            unit[statName] = newValue; // For CustomName and CurrentSpecial
         }
+        // You might want to re-render just that unit's card or the whole list if many changes
+        // For simplicity, we'll re-render the whole selected units list
         displayUnits(selectedUnits, selectedUnitsElement, renderSelectedUnitCard);
     }
 }
 
-// Save army to local storage (used by both index.html and army.html)
+// Save army to local storage
 function saveArmy() {
     localStorage.setItem('tankClubArmy', JSON.stringify(selectedUnits));
     alert('Army saved successfully!');
 }
 
-// NEW: Save army and redirect to army.html
-function saveAndGoToArmyPage() {
-    saveArmy(); // Save the current state of the army
-    window.location.href = 'army.html'; // Redirect to the new page
-}
-
-// Load army from local storage (used by both index.html and army.html)
+// Load army from local storage
 function loadArmy() {
     const savedArmy = localStorage.getItem('tankClubArmy');
     if (savedArmy) {
         selectedUnits = JSON.parse(savedArmy);
+        // Ensure loaded units have all 'Current' stats and 'CustomName' initialized
         selectedUnits = selectedUnits.map(unit => {
-            if (!unit.CurrentMove) {
+            if (!unit.CurrentMove) { // Check for one of the new current stats
                 return initializeCurrentStats(unit);
             }
-            if (unit.CustomName === undefined) {
+            if (unit.CustomName === undefined) { // Initialize CustomName if it's missing from old saves
                 unit.CustomName = '';
             }
             return unit;
@@ -231,7 +236,7 @@ function loadArmy() {
     }
 }
 
-// Download army as PDF (Modified for sepia background and border)
+// Download army as PDF
 async function downloadPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -240,18 +245,12 @@ async function downloadPDF() {
     const lineHeight = 7;
     const pageHeight = doc.internal.pageSize.height;
     const margin = 10;
-    const cardPadding = 5; // Padding inside the card border
-    const cardWidth = 190; // Approx A4 width (210) - 2 * margin (20)
-    const sepiaColor = '#704214'; // A sepia tone
-    const borderColor = '#4A2B0F'; // Darker sepia for border
-    const textColor = '#FFFFFF'; // White text for better contrast on sepia
 
     doc.setFontSize(20);
     doc.text('Tank Club Army List', 105, yOffset, null, null, 'center');
     yOffset += 15;
 
     doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0); // Reset text color for general info
     doc.text(`Total Points: ${totalPoints} pts`, 10, yOffset);
     yOffset += 10;
 
@@ -259,97 +258,64 @@ async function downloadPDF() {
         doc.text('No units in your army.', 10, yOffset);
     } else {
         selectedUnits.forEach((unit, index) => {
-            const startY = yOffset; // Y position for the start of the current unit card
-
-            // Calculate estimated height for the unit card (10 lines of text + padding)
-            // Adjust based on your text content and font sizes
-            const estimatedCardHeight = (lineHeight * 10) + (cardPadding * 2) + 5; // Extra 5 for buffer
-
-            if (yOffset + estimatedCardHeight > pageHeight - margin) {
+            if (yOffset + (lineHeight * 10) > pageHeight - margin) { // Adjusted for more lines per unit
                 doc.addPage();
-                yOffset = margin; // Reset yOffset for new page
+                yOffset = margin;
             }
 
-            // Draw sepia background rectangle
-            doc.setFillColor(sepiaColor);
-            doc.rect(margin, yOffset, cardWidth, estimatedCardHeight, 'F'); // 'F' for fill
-
-            // Draw border
-            doc.setDrawColor(borderColor);
-            doc.setLineWidth(1); // Border thickness
-            doc.rect(margin, yOffset, cardWidth, estimatedCardHeight, 'S'); // 'S' for stroke (border)
-
-            // Adjust yOffset for text inside the card
-            yOffset += cardPadding;
-            const textX = margin + cardPadding;
-
-            doc.setTextColor(textColor); // Set text color to white for text inside sepia card
             doc.setFontSize(14);
             // Display custom name if available, otherwise original name
-            doc.text(`${unit.CustomName || unit.Name} (${unit.Points} pts)`, textX, yOffset);
+            doc.text(`${unit.CustomName || unit.Name} (${unit.Points} pts)`, 10, yOffset);
             yOffset += lineHeight;
             doc.setFontSize(10);
-            doc.text(`Original: ${unit.Name}`, textX + 5, yOffset); // Indent slightly
+            doc.text(`Original: ${unit.Name}`, 15, yOffset); // Show original name too
             yOffset += lineHeight;
-            doc.text(`Nation: ${unit.Nation}`, textX + 5, yOffset);
+            doc.text(`Nation: ${unit.Nation}`, 15, yOffset);
             yOffset += lineHeight;
-            doc.text(`Original Move: ${unit.Move}, Aim: ${unit.Aim}, Shoot: ${unit.Shoot}, Speed: ${unit.Speed}`, textX + 5, yOffset);
+            doc.text(`Original Move: ${unit.Move}, Aim: ${unit.Aim}, Shoot: ${unit.Shoot}, Speed: ${unit.Speed}`, 15, yOffset);
             yOffset += lineHeight;
-            doc.text(`Original Armour — Front: ${unit.Front}, Side: ${unit.Side}, Rear: ${unit.Rear}`, textX + 5, yOffset);
+            doc.text(`Original Armour — Front: ${unit.Front}, Side: ${unit.Side}, Rear: ${unit.Rear}`, 15, yOffset);
             yOffset += lineHeight;
-            doc.text(`Original Special: ${unit.Special}`, textX + 5, yOffset);
+            doc.text(`Original Special: ${unit.Special}`, 15, yOffset);
             yOffset += lineHeight;
-            doc.text(`--- Current Stats ---`, textX + 5, yOffset);
+            doc.text(`--- Current Stats ---`, 15, yOffset);
             yOffset += lineHeight;
-            doc.text(`Move: ${unit.CurrentMove}, Aim: ${unit.CurrentAim}, Shoot: ${unit.CurrentShoot}, Speed: ${unit.CurrentSpeed}`, textX + 5, yOffset);
+            doc.text(`Move: ${unit.CurrentMove}, Aim: ${unit.CurrentAim}, Shoot: ${unit.CurrentShoot}, Speed: ${unit.CurrentSpeed}`, 15, yOffset);
             yOffset += lineHeight;
-            doc.text(`Armour — Front: ${unit.CurrentFront}, Side: ${unit.CurrentSide}, Rear: ${unit.CurrentRear}`, textX + 5, yOffset);
+            doc.text(`Armour — Front: ${unit.CurrentFront}, Side: ${unit.CurrentSide}, Rear: ${unit.CurrentRear}`, 15, yOffset);
             yOffset += lineHeight;
-            doc.text(`Special: ${unit.CurrentSpecial}`, textX + 5, yOffset);
-            yOffset += lineHeight + cardPadding; // Space to end of current card, ready for next
-
-            // Ensure next unit starts below the current card's bottom, with some spacing
-            yOffset = startY + estimatedCardHeight + margin / 2; // Add half margin for spacing between cards
+            doc.text(`Special: ${unit.CurrentSpecial}`, 15, yOffset);
+            yOffset += lineHeight * 2; // Add some space between units
         });
     }
 
-    doc.save('tank_club_army_display.pdf');
+    doc.save('tank_club_army_with_tracker.pdf');
 }
 
-// Initialize the application (for index.html)
+// Initialize the application
 async function initApp() {
     try {
-        // We only need to fetch units and populate filters on the main builder page
         allUnits = await fetchAndParseCSV('units.csv.csv');
+        // Give original units an InstanceID for consistent finding in `addToArmy`
         allUnits = allUnits.map(unit => {
             unit.InstanceID = 'original-' + Math.random().toString(36).substr(2, 9);
             return unit;
         });
 
-populateNationFilter();
-        applyFilters(); 
-        
-        loadArmy(); // Load any previously saved army when the builder page loads
+        populateNationFilter();
+        applyFilters(); // Initial display of units
+        updateTotals(); // Initial update of total points (will be 0)
     } catch (error) {
-        console.error('Error initializing builder app:', error);
+        console.error('Error loading units:', error);
         unitListElement.innerHTML = '<p class="text-red-500">Error loading units. Please check console for details.</p>';
     }
+
+    // Event listeners for filters
+    pointLimitInput.addEventListener('input', applyFilters);
+    nationFilterSelect.addEventListener('change', applyFilters);
 }
 
 // Check for dark mode preference on load
 if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
     document.documentElement.classList.add('dark');
 }
-
-// Make functions globally accessible (for onclick attributes)
-// Note: This is less ideal in complex apps, but fine for simple cases.
-// Consider using event listeners in script.js for more robust solutions.
-window.toggleDarkMode = toggleDarkMode;
-window.addToArmy = addToArmy;
-window.removeFromArmy = removeFromArmy;
-window.updateUnitStat = updateUnitStat;
-window.saveArmy = saveArmy; // Still accessible if needed directly
-window.loadArmy = loadArmy;
-window.downloadPDF = downloadPDF;
-window.initApp = initApp;
-window.saveAndGoToArmyPage = saveAndGoToArmyPage; // New function
