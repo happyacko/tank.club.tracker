@@ -326,10 +326,18 @@ async function initApp() {
             return unit;
         });
 
-        populateNationFilter();
-        applyFilters(); 
-        
-        loadArmy(); // Load any previously saved army when the builder page loads
+populateNationFilter();
+
+        // 👉 Add event listeners BEFORE applying filters
+        nationFilterSelect.addEventListener('change', applyFilters);
+        pointLimitInput.addEventListener('input', applyFilters);
+
+        // 👉 Apply filters after everything is ready
+applyFilters();
+
+        // 👉 Only load army if it's a deliberate action
+        // (do NOT call this automatically, or it replaces the filter results)
+        // loadArmy(); 
     } catch (error) {
         console.error('Error initializing builder app:', error);
         unitListElement.innerHTML = '<p class="text-red-500">Error loading units. Please check console for details.</p>';
