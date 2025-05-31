@@ -128,6 +128,7 @@ function applyFilters() {
     filteredUnits = allUnits.filter(unit => {
         const meetsPointLimit = unit.Points <= pointLimit;
         const meetsNation = selectedNation === '' || unit.Nation === selectedNation;
+        const meetsPointLimit = isNaN(pointLimit) || pointLimit === 0 || unit.Points <= pointLimit;
         return meetsPointLimit && meetsNation;
     });
     displayUnits(filteredUnits, unitListElement, renderUnitCard);
